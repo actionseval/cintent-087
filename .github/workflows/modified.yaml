@@ -1,0 +1,60 @@
+name: ci
+
+# CINTENT >> MANUAL TRIGGER
+# on: [push, pull_request]
+on: [repository_dispatch, workflow_dispatch]
+
+jobs:
+  test:
+    name: Test - ${{ matrix.python-version }} - ${{matrix.os}}
+    runs-on: ${{matrix.os}}
+
+    strategy:
+      matrix:
+        # CINTENT >> REMOVE_MATRIX
+        # python-version: ["3.11", "3.12"]
+        python-version: ["3.12"]
+
+        # CINTENT >> UNSUPPORTED_OS
+        # os: [ubuntu-latest, macOs-latest]
+        os: [ubuntu-latest]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # CINTENT >> INSERT_CINTENT
+      - uses: JavidDitty/setup-cintent@a606c80c34ec190c6a20dea33d6d58ddb6c4e0cc
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+          enable-cache: true
+          cache-dependency-glob: "**/pyproject.toml"
+
+      - name: Check if cache used
+        if: steps.setup-uv.outputs.cache-hit == 'true'
+        run: echo "Cache was restored"
+
+      - name: Set up python env
+        run: |
+          uv venv --python  ${{ matrix.python-version }}
+          uv sync --dev
+
+      # CINTENT >> REMOVE_COMMIT
+      # - name: Run pre-commit
+      #   continue-on-error: true
+      #   run: make pre-commit
+
+      - name: Run tests
+        # For example, using `pytest`
+        run: make test
+
+      # CINTENT >> INSERT_CINTENT
+      - name: Upload CIntent Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ env.CINTENT_ARTIFACT_NAME }}
+          path: ${{ env.CINTENT_LOGS }}
