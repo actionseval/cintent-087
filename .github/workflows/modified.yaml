@@ -23,15 +23,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # CINTENT >> INSERT_CINTENT
-      - uses: JavidDitty/setup-cintent@64faaac1333aabc2e0a00af6109b48ec4d8071bf
-
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v3
         with:
           version: "latest"
           enable-cache: true
           cache-dependency-glob: "**/pyproject.toml"
+
+      # CINTENT >> INSERT_CINTENT
+      - uses: JavidDitty/setup-cintent@3e5b2faf83a2ad32c22a1cd0f86f5f20ea53a5ab
 
       - name: Check if cache used
         if: steps.setup-uv.outputs.cache-hit == 'true'
